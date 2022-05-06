@@ -1,14 +1,22 @@
-import logging
+import logging, json
 from websocket_server import WebsocketServer
 # https://github.com/Pithikos/python-websocket-server
 
-def new_client(client, server):
-    print("New client connected and was given id %d" % client['id'])
-    server.send_message_to_all("Hey all, a new client has joined us")
+def new_client(client, server): # one ip can have multiple clients (if online)
+    print(f"{client['address'][0]} connected and was assigned id {client['id']}")
 
 def new_message(client, server, message):
-    print(f"Client {client['id']} said: {message}")
-    server.send_message_to_all(f"Client {client['id']} said: {message}")
+    print(f"[{client['id']}|{client['address'][0]}] {message}")
+
+    servermsg = {
+        "client": {
+            "id": client['id'],
+            "address": client['address'][0],
+            "port": client['address'][1]
+        },
+        "message": json.loads(message)
+    }
+    server.send_message_to_all(json.dumps(servermsg))
 
 def client_left(client, server):
     print(f"Client {client['id']} left")
